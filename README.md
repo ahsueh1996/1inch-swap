@@ -1,5 +1,7 @@
 https://ethglobal.com/events/newdelhi/prizes/1inch
 
+[1inch Dev Resources](https://1inch.dev/?utm_source=2025_events_flyer&utm_medium=promo&utm_campaign=flyer)
+
 🔗 Non-EVM Extensions for 1inch Cross-chain Swap (Fusion+) ⸺ $12,000
 🥇
 1st place
