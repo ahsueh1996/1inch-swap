@@ -23,12 +23,12 @@ import {
  * Similar to the GitHub gist but using plu-ts for on-chain interactions
  */
 export class CardanoResolver extends EventEmitter {
-  private lucid: Lucid;
+  private lucid!: Lucid;
   private config: ResolverConfig;
   private activeOrders = new Map<string, OrderStatus>();
   private secrets = new Map<string, SecretInfo>();
   private validator: any;
-  private escrowAddress: string;
+  private escrowAddress!: string;
 
   constructor(config: ResolverConfig) {
     super();
@@ -47,7 +47,7 @@ export class CardanoResolver extends EventEmitter {
         `https://cardano-${this.config.cardanoNetwork}.blockfrost.io/api/v0`,
         this.config.blockfrostApiKey
       ),
-      this.config.cardanoNetwork
+      this.config.cardanoNetwork as "Mainnet" | "Testnet" | "Preview" | "Preprod"
     );
 
     // Set up wallet from seed
@@ -60,8 +60,8 @@ export class CardanoResolver extends EventEmitter {
     };
 
     this.escrowAddress = this.config.cardanoNetwork === 'mainnet'
-      ? cardanoEscrowMainnetAddr.toBech32()
-      : cardanoEscrowTestnetAddr.toBech32();
+      ? cardanoEscrowMainnetAddr.toString()
+      : cardanoEscrowTestnetAddr.toString();
 
     console.log(`✅ Cardano Resolver initialized on ${this.config.cardanoNetwork}`);
     console.log(`📍 Escrow Address: ${this.escrowAddress}`);
@@ -174,7 +174,7 @@ export class CardanoResolver extends EventEmitter {
         assets[unit] = params.amount;
       } else {
         // ADA
-        assets.lovelace += params.amount;
+        assets.lovelace = (assets.lovelace || 0n) + params.amount;
       }
 
       // Build and submit transaction
