@@ -1,4 +1,4 @@
-import { Lucid, Blockfrost, fromText, toHex, Data, UTxO, Assets } from "lucid-cardano";
+import { Lucid, Blockfrost, fromText, toHex, Data, UTxO, Assets, Constr } from "lucid-cardano";
 import { createHash, randomBytes } from "crypto";
 import { EventEmitter } from "events";
 import {
@@ -320,7 +320,12 @@ export class CardanoResolver extends EventEmitter {
       const datum = Data.from(escrowUtxo.datum!, CardanoEscrowDatum);
 
       // cancel redeemer as PlutusData
-      const redeemer = CardanoEscrowRedeemer.Cancel({}).toData();
+      if (!CardanoEscrowRedeemer.Cancel) {
+        throw new Error("Cancel constructor missing on CardanoEscrowRedeemer");
+      }
+
+      const redeemer = Data.to(new Constr(2, [])); // Cancel
+
 
       // Build transaction
       let tx = this.lucid
