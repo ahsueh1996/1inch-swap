@@ -1,4 +1,4 @@
-import { RelayerConfig } from '../types';
+import { RelayerConfig } from "../types/index.js";
 import dotenv from 'dotenv';
 
 dotenv.config();
