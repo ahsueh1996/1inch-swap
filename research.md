@@ -12,11 +12,13 @@
 - Swaps betweena any two tokens on any supported evm chains
 
 # How Existing Cardano <--> ETH works in [Ronakgupta11's CardanoSwap](https://github.com/ronakgupta11/cardano-swap)
-- Not yet live in official 1inch 
+- **NOT using official 1inch Fusion/Fusion+** - custom standalone implementation
 - User locks assets (as HTLC on Cardano) on respective chains and resolver facilate swap on Cardano and EVM
 - Resolver reveal a secret preimage
 - Relayer shares secrets and handles coordination (non-custodially)
 - Code distribution (# of files): 29 js, 34 ts, 16 sol
+
+**📊 For detailed Fusion integration analysis:** [1inch-fusion-integration-analysis.md](./1inch-fusion-integration-analysis.md)
 
 ## Architecture Overview
 
@@ -175,3 +177,11 @@ struct Order {
 - **Access token requirement** for public operations (not standard in 1inch Fusion)
 - **Time-based access control** with resolver priority periods
 - **Multi-chain state management** through off-chain coordination
+
+---
+
+## Implementation Analysis Summary
+
+This CardanoSwap implementation represents an ambitious attempt to extend 1inch's proven infrastructure to cross-chain atomic swaps. While it successfully adapts 1inch's gas optimization techniques and order management patterns, several critical limitations prevent production deployment.
+
+**For detailed limitations and improvement recommendations, see:** [ronakgupta11-cardanoswap-improvement-items.md](./ronakgupta11-cardanoswap-improvement-items.md)
