@@ -52,7 +52,12 @@ contract CreateOrder is Script {
 
         Config memory config = ConfigLib.getConfig(vm, path);
 
-        _escrowFactory = BaseEscrowFactory(config.escrowFactory);
+        // before
+        // _escrowFactory = BaseEscrowFactory(config.escrowFactory);
+
+        // after
+        _escrowFactory = BaseEscrowFactory(payable(config.escrowFactory));
+
 
         _deployerPK = vm.envUint("DEPLOYER_PRIVATE_KEY");
         _makerPK = vm.envUint("MAKER_PRIVATE_KEY");
@@ -221,7 +226,7 @@ contract CreateOrder is Script {
             address[] memory targets = new address[](1);
             bytes[] memory arguments = new bytes[](1);
             targets[0] = dstToken;
-            arguments[0] = abi.encodePacked(IERC20(dstToken).approve.selector, abi.encode(config.escrowFactory, config.dstAmount));
+            arguments[0] = abi.encodePacked(IERC20(dstToken).approve.selector, abi.encode(payable(config.escrowFactory), config.dstAmount));
 
             vm.startBroadcast(uint256(_deployerPK));
             IResolverExample(resolver).arbitraryCalls(targets, arguments);
@@ -247,6 +252,17 @@ contract CreateOrder is Script {
 
         timelocks = TimelocksLib.setDeployedAt(timelocks, deployedAt);
 
+        // IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
+        //     orderHash: orderHash,
+        //     amount: config.dstAmount,
+        //     maker: Address.wrap(uint160(config.maker)),
+        //     taker: Address.wrap(uint160(resolver)),
+        //     token: Address.wrap(uint160(dstToken)),
+        //     hashlock: hashlock,
+        //     safetyDeposit: config.safetyDeposit,
+        //     timelocks: timelocks
+        // });
+
         IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             amount: config.dstAmount,
@@ -255,8 +271,11 @@ contract CreateOrder is Script {
             token: Address.wrap(uint160(dstToken)),
             hashlock: hashlock,
             safetyDeposit: config.safetyDeposit,
-            timelocks: timelocks
+            timelocks: timelocks,
+            // NEW:
+            feeToken: Address.wrap(uint160(FEE_TOKEN[block.chainid]))
         });
+
 
         address[] memory targets = new address[](1);
         bytes[] memory data = new bytes[](1);
@@ -283,6 +302,17 @@ contract CreateOrder is Script {
         (bytes32 orderHash, Timelocks timelocks) = EscrowDevOpsTools.getOrderHashAndTimelocksFromSrcEscrowCreatedEvent(config);
         address resolver = EscrowDevOpsTools.getResolver(config);
 
+        // IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
+        //     orderHash: orderHash,
+        //     amount: config.srcAmount,
+        //     maker: Address.wrap(uint160(config.maker)),
+        //     taker: Address.wrap(uint160(resolver)),
+        //     token: Address.wrap(uint160(srcToken)),
+        //     hashlock: hashlock,
+        //     safetyDeposit: config.safetyDeposit,
+        //     timelocks: timelocks
+        // });
+
         IBaseEscrow.Immutables memory immutables = IBaseEscrow.Immutables({
             orderHash: orderHash,
             amount: config.srcAmount,
@@ -291,8 +321,11 @@ contract CreateOrder is Script {
             token: Address.wrap(uint160(srcToken)),
             hashlock: hashlock,
             safetyDeposit: config.safetyDeposit,
-            timelocks: timelocks
+            timelocks: timelocks,
+            // NEW:
+            feeToken: Address.wrap(uint160(FEE_TOKEN[block.chainid]))
         });
+
 
         address escrow = IEscrowFactory(_escrowFactory).addressOfEscrowSrc(immutables);
 
