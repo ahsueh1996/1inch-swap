@@ -52,38 +52,19 @@ Copy the environment template:
 cp .env.example .env
 ```
 
-Edit `.env` with your configuration:
-```env
-# Chain RPC URLs
-ETH_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
-CARDANO_NODE_URL=https://cardano-mainnet.blockfrost.io/api/v0
-CARDANO_PROJECT_ID=YOUR_BLOCKFROST_PROJECT_ID
-
-# Database
-DB_PATH=./swaps.db
-
-# Relayer Configuration
-MAX_SECRET_HOLD_TIME=300
-VALIDATION_TOLERANCE=0.01
-POLL_INTERVAL=10000
-
-# API Configuration
-PORT=3000
-API_SECRET=your_secret_key
-```
+Edit `.env` with your configuration.
 
 ### 3. Build and Run
 
 ```bash
-# Development
-npm run dev
-
 # Production
 npm run build
 npm start
 ```
 
 ## API Endpoints
+
+The `API_SECRET` is whatever you set in your `.env`.
 
 ### Create Swap
 ```bash
@@ -192,18 +173,6 @@ src/
 └── relayer.ts     # Main application entry point
 ```
 
-### Testing
-
-```bash
-npm test
-```
-
-### Building
-
-```bash
-npm run build
-```
-
 ## Monitoring and Observability
 
 The relayer provides comprehensive logging and status endpoints:
@@ -221,7 +190,3 @@ The relayer provides comprehensive logging and status endpoints:
 4. **Monitoring**: Set up log aggregation and alerting
 5. **Backup**: Regular backup of swap database
 6. **Security**: Secure API secret and restrict network access
-
-## License
-
-MIT License - see LICENSE file for details.

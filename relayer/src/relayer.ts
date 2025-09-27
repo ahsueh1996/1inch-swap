@@ -1,11 +1,11 @@
-import { SwapRegistry } from './database';
-import { SecretMediator } from './services/mediator';
-import { LivenessEnforcer } from './services/enforcer';
-import { TimeoutMonitor } from './services/monitor';
-import { ChainMonitorService } from './services/chainMonitor';
-import { ParameterValidator } from './services/validator';
-import { createAPI } from './api';
-import { loadConfig } from './utils/config';
+import { SwapRegistry } from './database/index.js';
+import { SecretMediator } from './services/mediator.js';
+import { LivenessEnforcer } from './services/enforcer.js';
+import { TimeoutMonitor } from './services/monitor.js';
+import { ChainMonitorService } from './services/chainMonitor.js';
+import { ParameterValidator } from './services/validator.js';
+import { createAPI } from './api/index.js';
+import { loadConfig } from './utils/config.js';
 
 export class CardanoRelayer {
   private registry!: SwapRegistry;
@@ -221,11 +221,9 @@ async function main(): Promise<void> {
   }
 }
 
-if (require.main === module) {
-  main().catch(error => {
-    console.error('❌ Fatal error:', error);
-    process.exit(1);
-  });
-}
+main().catch(error => {
+  console.error("❌ Fatal error:", error);
+  process.exit(1);
+});
 
 export default CardanoRelayer;

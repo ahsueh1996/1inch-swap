@@ -1,6 +1,6 @@
-import { SwapRegistry } from '../database';
-import { ParameterValidator } from './validator';
-import { RelayerConfig, SwapRecord } from '../types';
+import { SwapRegistry } from '../database/index.js';
+import { ParameterValidator } from './validator.js';
+import { RelayerConfig } from '../types/index.js';
 import { EventEmitter } from 'events';
 
 export interface SecretRequest {

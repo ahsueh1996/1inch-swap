@@ -1,4 +1,4 @@
-import { Lucid, Blockfrost, fromText, toHex, Data, UTxO, Assets } from "lucid-cardano";
+import { Lucid, Blockfrost, fromText, toHex, Data, UTxO, Assets, Constr } from "lucid-cardano";
 import { createHash, randomBytes } from "crypto";
 import { EventEmitter } from "events";
 import {
@@ -208,7 +208,11 @@ export class CardanoResolver extends EventEmitter {
 
     } catch (error) {
       console.error('❌ Failed to deploy escrow:', error);
-      return { txHash: '', success: false, error: error.message };
+      return { 
+        txHash: '', 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
     }
   }
 
@@ -230,6 +234,10 @@ export class CardanoResolver extends EventEmitter {
       }
 
       const escrowUtxo = escrowUtxos[0];
+      if (!escrowUtxo) {
+        throw new Error("No escrow UTXO found");
+      }
+
       const datum = Data.from(escrowUtxo.datum!, CardanoEscrowDatum);
 
       // Construct redeemer
@@ -281,7 +289,11 @@ export class CardanoResolver extends EventEmitter {
 
     } catch (error) {
       console.error('❌ Withdrawal failed:', error);
-      return { txHash: '', success: false, error: error.message };
+      return { 
+        txHash: '', 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
     }
   }
 
@@ -301,14 +313,26 @@ export class CardanoResolver extends EventEmitter {
       }
 
       const escrowUtxo = escrowUtxos[0];
+      if (!escrowUtxo) {
+        throw new Error("No escrow UTXO found");
+      }
+
       const datum = Data.from(escrowUtxo.datum!, CardanoEscrowDatum);
 
-      const redeemer = Data.to({ Cancel: {} }, CardanoEscrowRedeemer);
+      // cancel redeemer as PlutusData
+      if (!CardanoEscrowRedeemer.Cancel) {
+        throw new Error("Cancel constructor missing on CardanoEscrowRedeemer");
+      }
 
+      const redeemer = Data.to(new Constr(2, [])); // Cancel
+
+
+      // Build transaction
       let tx = this.lucid
         .newTx()
         .collectFrom([escrowUtxo], redeemer)
         .attachSpendingValidator(this.validator);
+
 
       // Refund to resolver
       if (datum.asset_policy === '' && datum.asset_name === '') {
@@ -342,7 +366,11 @@ export class CardanoResolver extends EventEmitter {
 
     } catch (error) {
       console.error('❌ Cancellation failed:', error);
-      return { txHash: '', success: false, error: error.message };
+      return { 
+        txHash: '', 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
     }
   }
 

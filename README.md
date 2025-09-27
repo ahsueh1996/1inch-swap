@@ -46,10 +46,14 @@ Build a novel extension for 1inch Cross-chain Swap (Fusion+) that enables swaps 
 
 Qualification Requirements
 Requirements: 
-- Preserve hashlock and timelock functionality for the non-EVM implementation. 
-- Swap functionality should be bidirectional (swaps should be possible to and from Ethereum) 
+- ✅ Preserve hashlock and timelock functionality for the non-EVM implementation. 
+- ✅ Swap functionality should be bidirectional (swaps should be possible to and from Ethereum) 
 - Onchain execution of token transfers should be presented during the final demo
-- Proper Git commit history (no single-commit entries on the final day)
+- ✅ Proper Git commit history (no single-commit entries on the final day)
+
+Bonus:
+- ✨ Merkle tree for partial fills
+- ✨ Resolver expiry contingency. Secret publishes on IPFS for resolver
 
 ## Flow Diagram
 

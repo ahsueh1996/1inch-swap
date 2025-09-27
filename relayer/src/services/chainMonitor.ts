@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import { Lucid, Blockfrost, fromHex, toHex } from 'lucid-cardano';
+//import { loadLucid } from "../utils/lucidLoader";
 import { SwapRegistry } from '../database';
 import { RelayerConfig, SecretRevealEvent, ChainMonitor } from '../types';
 import { EventEmitter } from 'events';
@@ -15,7 +16,7 @@ export interface EscrowEvent {
 
 export class ChainMonitorService extends EventEmitter {
   private ethProvider: ethers.JsonRpcProvider | null = null;
-  private lucid: Lucid | null = null;
+  private lucid: any | null = null;
   private monitoringInterval: NodeJS.Timeout | null = null;
   private chainStates = new Map<number, ChainMonitor>();
 
@@ -53,7 +54,7 @@ export class ChainMonitorService extends EventEmitter {
           this.config.cardanoNodeUrl,
           this.config.cardanoProjectId
         ),
-        'Mainnet'
+        'Preprod' // 'Mainnet' or 'Preview' or 'Preprod' based on your network
       );
 
       console.log('Connected to Cardano network');

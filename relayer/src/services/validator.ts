@@ -1,4 +1,4 @@
-import { SwapParams, ValidationResult, RelayerConfig } from '../types';
+import { SwapParams, ValidationResult, RelayerConfig } from '../types/index.js';
 import { ethers } from 'ethers';
 
 export class ParameterValidator {
