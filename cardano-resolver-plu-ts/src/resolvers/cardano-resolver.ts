@@ -48,7 +48,7 @@ export class CardanoResolver extends EventEmitter {
         `https://cardano-${this.config.cardanoNetwork}.blockfrost.io/api/v0`,
         this.config.blockfrostApiKey
       ),
-      this.config.cardanoNetwork as "Mainnet" | "Testnet" | "Preview" | "Preprod"
+      this.config.cardanoNetwork as "Mainnet" | "Preview" | "Preprod"
     );
 
     // Set up wallet from seed
@@ -60,7 +60,7 @@ export class CardanoResolver extends EventEmitter {
       script: toHex(cardanoEscrowScript.cbor)
     };
 
-    this.escrowAddress = this.config.cardanoNetwork === 'mainnet'
+    this.escrowAddress = this.config.cardanoNetwork === 'Mainnet'
       ? cardanoEscrowMainnetAddr.toString()
       : cardanoEscrowTestnetAddr.toString();
 
