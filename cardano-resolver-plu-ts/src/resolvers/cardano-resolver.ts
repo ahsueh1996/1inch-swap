@@ -1,4 +1,5 @@
 import { Lucid, Blockfrost, fromText, toHex, Data, UTxO, Assets, Constr } from "lucid-cardano";
+import { fromHex } from "@harmoniclabs/uint8array-utils";
 import { createHash, randomBytes } from "crypto";
 import { EventEmitter } from "events";
 import {
@@ -47,7 +48,7 @@ export class CardanoResolver extends EventEmitter {
         `https://cardano-${this.config.cardanoNetwork}.blockfrost.io/api/v0`,
         this.config.blockfrostApiKey
       ),
-      this.config.cardanoNetwork as "Mainnet" | "Testnet" | "Preview" | "Preprod"
+      this.config.cardanoNetwork as "Mainnet" | "Preview" | "Preprod"
     );
 
     // Set up wallet from seed
@@ -59,7 +60,7 @@ export class CardanoResolver extends EventEmitter {
       script: toHex(cardanoEscrowScript.cbor)
     };
 
-    this.escrowAddress = this.config.cardanoNetwork === 'mainnet'
+    this.escrowAddress = this.config.cardanoNetwork === 'Mainnet'
       ? cardanoEscrowMainnetAddr.toString()
       : cardanoEscrowTestnetAddr.toString();
 
@@ -241,9 +242,12 @@ export class CardanoResolver extends EventEmitter {
       const datum = Data.from(escrowUtxo.datum!, CardanoEscrowDatum);
 
       // Construct redeemer
-      const redeemer = Data.to({
-        Withdraw: { secret: params.secret }
-      }, CardanoEscrowRedeemer);
+      // const redeemer = Data.to({
+      //   Withdraw: { secret: params.secret }
+      // }, CardanoEscrowRedeemer);
+
+      // secret is Uint8Array, direct creation of Constr
+      const redeemer = Data.to(new Constr(0, [ params.secret ]));
 
       // Build transaction
       let tx = this.lucid

@@ -90,7 +90,7 @@ export interface OrderStatus {
  * Resolver configuration
  */
 export interface ResolverConfig {
-  cardanoNetwork: 'mainnet' | 'testnet' | 'preview' | 'preprod';
+  cardanoNetwork: 'Mainnet' | 'Preview' | 'Preprod';
   blockfrostApiKey: string;
   walletSeed: string;
   evmRpcUrl: string;

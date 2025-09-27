@@ -11,7 +11,7 @@
     "resolver": "ts-node src/resolver.ts"
   },
   "dependencies": {
-    "@harmoniclabs/plu-ts": "^0.7.0",
+    "@harmoniclabs/plu-ts": "^0.8.2",
     "@1inch/cross-chain-sdk": "^0.1.15",
     "@1inch/fusion-sdk": "^2.1.12-rc.0",
     "lucid-cardano": "^0.10.7",
