@@ -1,21 +1,55 @@
-const ethers = require('ethers');
-const CC_SDK = require('@1inch/cross-chain-sdk')
-const {SupportedChains} = require('@1inch/cross-chain-sdk');
-const F_SDK = require('@1inch/fusion-sdk');
-const { EscrowExtension } = require('@1inch/cross-chain-sdk');
-const { EvmCrossChainOrder } = require('@1inch/cross-chain-sdk');
+// const ethers = require('ethers');
+// const CC_SDK = require('@1inch/cross-chain-sdk')
+// const {SupportedChains} = require('@1inch/cross-chain-sdk');
+// const F_SDK = require('@1inch/fusion-sdk');
+// const { EscrowExtension } = require('@1inch/cross-chain-sdk');
+// const { EvmCrossChainOrder } = require('@1inch/cross-chain-sdk');
 
-const bs_escrowFactory = require("./constants").base_sepolia.escrowFactory
-const resolver_address = require("./constants").resolverAddress
-const ERC20_TRUE = require("./constants").base_sepolia.ERC20_TRUE
-const limitOrderDomain = require("./constants").domain
-const limitOrderProtocol = require("./constants").limitOrderProtocol
-const USDC = require("./constants").base_sepolia.USDC
+// const bs_escrowFactory = require("./constants").base_sepolia.escrowFactory
+// const resolver_address = require("./constants").resolverAddress
+// const ERC20_TRUE = require("./constants").base_sepolia.ERC20_TRUE
+// const limitOrderDomain = require("./constants").domain
+// const limitOrderProtocol = require("./constants").limitOrderProtocol
+// const USDC = require("./constants").base_sepolia.USDC
 
-const rpc = 'https://sepolia.base.org'
-const provider = new ethers.JsonRpcProvider(rpc)
-const wallet = new ethers.Wallet(process.env.PrivateKey, provider)
-const coder = new ethers.AbiCoder();
+// const rpc = 'https://sepolia.base.org'
+// const provider = new ethers.JsonRpcProvider(rpc)
+// const wallet = new ethers.Wallet(process.env.PrivateKey, provider)
+// const coder = new ethers.AbiCoder();
+
+import {
+  JsonRpcProvider,
+  Wallet,
+  AbiCoder,
+  randomBytes
+} from "ethers";
+
+import * as CC_SDK from "@1inch/cross-chain-sdk";
+// import { SupportedChains, EscrowExtension, EvmCrossChainOrder } from "@1inch/cross-chain-sdk";
+import pkg from '@1inch/cross-chain-sdk';
+const { SupportedChains, EscrowExtension, EvmCrossChainOrder } = pkg;
+import * as F_SDK from "@1inch/fusion-sdk";
+
+import {
+  base_sepolia,
+  resolverAddress,
+  domain as limitOrderDomain,
+  limitOrderProtocol
+} from "./constants.js";
+
+// unpack values from base_sepolia
+const bs_escrowFactory = base_sepolia.escrowFactory;
+const ERC20_TRUE = base_sepolia.ERC20_TRUE;
+const USDC = base_sepolia.USDC;
+
+const resolver_address = resolverAddress;
+
+// provider, wallet, coder
+const rpc = "https://sepolia.base.org";
+const provider = new JsonRpcProvider(rpc);
+const wallet = new Wallet(process.env.PrivateKey, provider);
+const coder = new AbiCoder();
+
 
 Error.stackTraceLimit = 50;
 
