@@ -97,7 +97,7 @@
 - **Issue**: Only basic swap orders supported
 - **Impact**: Reduced functionality compared to traditional DEXs
 - **Priority**: LOW
-- **Fix**: Implement partial fills and advanced order types
+- **Fix**: Implement partial fills and advanced order types (now it's all-or-nothing; once unlocked, the entire UTXO is consumed.)
 
 ## Scalability Concerns
 
