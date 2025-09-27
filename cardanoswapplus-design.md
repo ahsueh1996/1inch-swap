@@ -1,14 +1,12 @@
 # CardanoSwap+ 
 Modelling after Ronakgupta11's HTLC design but empowered with Fusion+'s dutch auction price discovery.
 
-## Overview
-1. Fusion Layer (off-chain Dutch auction + resolver selection)
-2. EVM components (Escrow contracts)
-3. Cardano components (EscrowDst-equivalent validator with UTXO-based partial fill extension)
-4. Watcher (bridges seecrets and timelocks to maintain atomicity)
-
-## Architecture
-
+## Architecture Overview
+1. User (creates and sign Fusion intent)
+2. Fusion Layer (off-chain Dutch auction + resolver selection)
+3. EVM components (Escrow contracts)
+4. Cardano components (EscrowDst-equivalent validator with UTXO-based partial fill extension)
+5. Watcher (bridges seecrets and timelocks to maintain atomicity)
 
 ## 1inch Fusion Integration Plan
 
@@ -37,7 +35,16 @@ On Cardano:
 4. To support partial fill, we need merkle multi-secret support, extended datum (to include remaining amount, current index and merkle root), as well as partial withdraw logic in the validator (recreate new escrow UTXO).
 
 
-## Watcher
+## Watcher Tolerance
 
 1. Fault tolerance: if the watcher goes down, swaps might expire and both sides will get refunded. Note that funds are safe because escrows are governed by hashlock + timelock so it's not like any party can steal funds. However, liveness will get impacted as swap would not complete without the secret reveal.
 2. (Future) Incentivize people to run wawtchers by giving them deposit reward for finalizing swaps (like in `publicWithdraw` and `publicCancel`)
+
+## Key Properties
+
+1. Non-custodial (locked only; no centralized party holding funds)
+2. Atomic (hashlock + timelock ensures this)
+3. Gasless (resolver pays for gas not users)
+4. MEV resistance (thanks to Fusion's Dutch auction solution)
+5. Partial fills (through Cardano validator extension)
+6. Fault-tolerant (liveness and availability ensured by decentralized watcher)

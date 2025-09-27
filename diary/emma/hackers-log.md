@@ -16,3 +16,4 @@
     - Step 3 - design and specify architecture! (6hr)
     - Step 4 - build/hack it! (16hr)
     - Step 5 - because it's a ethglobal, remember to save time for video making and submission prep! (3hr)
+* 0818 Got the overall architecture figured out! Interesting stuff! Let's see if it works as expected. Now time to hunt for food.
