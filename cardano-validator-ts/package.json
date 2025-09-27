@@ -1,0 +1,28 @@
+{
+  "name": "cardanoswap-fusion-validators",
+  "version": "1.0.0",
+  "description": "Cardano validators for 1inch Fusion cross-chain swaps with partial fill support",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "test": "jest",
+    "compile-contracts": "ts-node src/compile.ts"
+  },
+  "dependencies": {
+    "@harmoniclabs/plu-ts": "^0.7.0",
+    "@1inch/fusion-sdk": "^2.1.12-rc.0",
+    "lucid-cardano": "^0.10.7",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  },
+  "keywords": ["cardano", "plutus", "fusion", "1inch", "htlc", "cross-chain"],
+  "author": "CardanoSwap+ Team",
+  "license": "MIT"
+}

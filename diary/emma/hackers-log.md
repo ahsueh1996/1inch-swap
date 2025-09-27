@@ -17,3 +17,4 @@
     - Step 4 - build/hack it! (16hr)
     - Step 5 - because it's a ethglobal, remember to save time for video making and submission prep! (3hr)
 * 0818 Got the overall architecture figured out! Interesting stuff! Let's see if it works as expected. Now time to hunt for food.
+* 1332 LLM is so bad at Aiken. Wow. Maybe it's faster I go read some tutorials and docs. Trying Plutus Haskell instead.... but this ghcup dependency took forever to install (it's been running for the last 30mins at least.... doesn't help that wifi keeps dropping either). The original LOP-based cardanoswap uses `plu-ts`. Will try that instead.
