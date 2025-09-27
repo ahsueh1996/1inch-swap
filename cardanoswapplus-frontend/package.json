@@ -1,0 +1,63 @@
+{
+  "name": "cardanoswapplus-frontend",
+  "version": "1.0.0",
+  "description": "CardanoSwap+ frontend - Cross-chain swap interface for Ethereum to Cardano using 1inch Fusion",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@1inch/fusion-sdk": "^2.1.12-rc.0",
+    "@1inch/cross-chain-sdk": "^0.1.15",
+    "ethers": "^6.13.0",
+    "lucid-cardano": "^0.10.7",
+    "@harmoniclabs/plu-ts": "^0.7.0",
+    "@tailwindcss/forms": "^0.5.7",
+    "tailwindcss": "^3.4.0",
+    "axios": "^1.6.0",
+    "react-query": "^3.39.0",
+    "zustand": "^4.5.0",
+    "bignumber.js": "^9.1.0",
+    "react-hot-toast": "^2.4.0",
+    "react-icons": "^5.0.0",
+    "clsx": "^2.1.0",
+    "framer-motion": "^11.0.0",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-switch": "^1.0.3",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    "react-hook-form": "^7.50.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.2.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0"
+  },
+  "keywords": [
+    "cardanoswapplus",
+    "cross-chain",
+    "swap",
+    "ethereum",
+    "cardano",
+    "1inch",
+    "fusion",
+    "atomic-swap",
+    "defi"
+  ],
+  "author": "CardanoSwap+ Team",
+  "license": "MIT"
+}

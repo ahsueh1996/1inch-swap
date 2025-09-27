@@ -21,3 +21,5 @@
 * 1402 Chatted with 1inch mentors - Aleksandr and this other guy are super patient and helpful. Hopefully it's actually how we understand it.... lol. They also mentioned it'd be cool to implement resolver expiration (if a resolver takes too long, the deal expires i.e. the secret gets open to the public for all other resolvers to process - not sure about race condition :hmm-thinking-face).
 * 1500 Yoga time! So nice that Ethglobal always organize some physical sessions to move our rusty joints and rest our brains.
 * 1738 Logging before going for a nap... All components are more or less done (but full of bugs!). We will debug while integrating. If time permits :finger-crossed, maybe we can implement an MCP tool as the swap UI (e.g. indicate your intention to Claude while enabling the cardanoswap+ tools and it will do it for you!)
+* 2208 Awake now! Eating the food Albert saved me... :happy :thanks 11 hours left! Time to integrate and troubleshoot!
+* 2326 Wifi is still so horrible... even `npm i` can take forever... everything keeps cutting out...

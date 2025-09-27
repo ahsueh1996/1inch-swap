@@ -11,11 +11,20 @@ import { MerkleProof } from "./fusion-datum";
  */
 export const FusionEscrowSrcRedeemer = pstruct({
   // Private withdrawal: Only taker can withdraw with secret during withdrawal period
-  // Maps to withdraw() and withdrawTo() functions in EVM contract
+  // Maps to withdraw() function in EVM contract
   Withdraw: {
     secret: bs,                                    // The secret that hashes to hashlock
     amount: int,                                   // Amount to withdraw (≤ remaining)
     merkle_proof: PMaybe(MerkleProof.type).type   // Merkle proof for partial fills (if multi-fill)
+  },
+
+  // Private withdrawal to specific address
+  // Maps to withdrawTo() function in EVM contract
+  WithdrawTo: {
+    secret: bs,                                    // The secret that hashes to hashlock
+    amount: int,                                   // Amount to withdraw (≤ remaining)
+    to: PPubKeyHash.type,                          // Target address for withdrawal
+    merkle_proof: PMaybe(MerkleProof.type).type   // Merkle proof for partial fills
   },
 
   // Public withdrawal: Anyone can withdraw with secret after public period starts, earns deposit
@@ -73,10 +82,10 @@ export const FusionEscrowSrcExtendedRedeemer = pstruct({
  */
 export const FusionEscrowSrcDatum = pstruct({
   FusionEscrowSrcDatum: {
-    // Core participants (same as base datum)
+    // Core participants
     maker: PPubKeyHash.type,           // User who created and funded the escrow
+    taker: PPubKeyHash.type,           // Taker who can withdraw with secret (beneficiary)
     resolver: PPubKeyHash.type,        // Resolver who will handle cross-chain verification
-    beneficiary: PPubKeyHash.type,     // Taker who can withdraw with secret
 
     // Asset details
     asset_policy: bs,                  // PolicyID of native token (empty for ADA)
@@ -86,21 +95,19 @@ export const FusionEscrowSrcDatum = pstruct({
 
     // HTLC parameters
     hashlock: bs,                      // SHA-256 hash of secret (single fill)
-    user_deadline: int,                // Deadline for private withdrawal (POSIX timestamp)
-    public_deadline: int,              // Deadline for public withdrawal (POSIX timestamp)
-    cancel_after: int,                 // Deadline for cancellation (POSIX timestamp)
+
+    // Timeline parameters (matching EVM contract phases)
+    finality_time: int,                // When withdrawal can start (after finality)
+    private_cancel_time: int,          // When private cancellation starts / public withdrawal starts
+    public_cancel_time: int,           // When public cancellation starts
     deposit_lovelace: int,             // Safety deposit for public operations
 
     // Fusion multi-fill support
-    merkle_root: PMaybe(bs).type,      // Merkle root for multiple secrets (None for single fill)
+    merkle_root: bs,                   // Merkle root for multiple secrets (empty string for single fill)
 
     // Order metadata
     order_hash: bs,                    // 1inch Fusion order hash for tracking
-    fill_id: int,                      // Unique fill ID for this escrow instance
-
-    // Source-specific fields
-    finality_blocks: int,              // Number of blocks to wait for finality
-    deployed_at_block: int             // Block number when escrow was deployed
+    fill_id: int                       // Unique fill ID for this escrow instance
   }
 });
 

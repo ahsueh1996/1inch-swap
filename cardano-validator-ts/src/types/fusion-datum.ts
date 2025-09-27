@@ -1,4 +1,13 @@
-import { pstruct, bs, PPubKeyHash, int, list, PMaybe, data } from "@harmoniclabs/plu-ts";
+import {
+  pstruct,
+  bs,
+  PPubKeyHash,
+  int,
+  list,
+  PMaybe,
+  Data,
+  StructT
+} from "@harmoniclabs/plu-ts";
 
 /**
  * Fusion-compatible Datum for destination escrow on Cardano
@@ -54,6 +63,6 @@ export const AssetInfo = pstruct({
   }
 });
 
-export type FusionEscrowDatumType = typeof FusionEscrowDatum.type;
-export type MerkleProofType = typeof MerkleProof.type;
-export type AssetInfoType = typeof AssetInfo.type;
+export type FusionEscrowDatumType = StructT<typeof FusionEscrowDatum.type>;
+export type MerkleProofType = StructT<typeof MerkleProof.type>;
+export type AssetInfoType = StructT<typeof AssetInfo.type>;

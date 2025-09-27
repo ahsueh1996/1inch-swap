@@ -17,7 +17,6 @@ export * from "./types/fusion-redeemer";
 export * from "./types/fusion-src-redeemer";
 export * from "./validators/fusion-escrow-dst";
 export * from "./validators/fusion-escrow-src";
-export * from "./validators/fusion-escrow-src-extended";
 export * from "./builders/escrow-builder";
 export * from "./builders/escrow-src-builder";
 export * from "./builders/fusion-integration";
@@ -37,33 +36,18 @@ export {
 
 export {
   FusionEscrowSrcRedeemer,
-  FusionEscrowSrcExtendedRedeemer,
   FusionEscrowSrcDatum
 } from "./types/fusion-src-redeemer";
 
 export {
   fusionEscrowDst,
-  compiledFusionEscrowDst,
-  fusionEscrowDstScript,
-  fusionEscrowDstMainnetAddr,
-  fusionEscrowDstTestnetAddr
+  fusionEscrowDstScript
 } from "./validators/fusion-escrow-dst";
 
 export {
   fusionEscrowSrc,
-  compiledFusionEscrowSrc,
-  fusionEscrowSrcScript,
-  fusionEscrowSrcMainnetAddr,
-  fusionEscrowSrcTestnetAddr
+  fusionEscrowSrcScript
 } from "./validators/fusion-escrow-src";
-
-export {
-  fusionEscrowSrcExtended,
-  compiledFusionEscrowSrcExtended,
-  fusionEscrowSrcExtendedScript,
-  fusionEscrowSrcExtendedMainnetAddr,
-  fusionEscrowSrcExtendedTestnetAddr
-} from "./validators/fusion-escrow-src-extended";
 
 export { FusionEscrowBuilder } from "./builders/escrow-builder";
 export { FusionEscrowSrcBuilder } from "./builders/escrow-src-builder";

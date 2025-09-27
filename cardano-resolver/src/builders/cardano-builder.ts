@@ -142,7 +142,7 @@ export class CardanoTransactionBuilder {
   private async buildEscrowScript(order: FusionOrder, secretHash: string): Promise<any> {
     // Plutus script for HTLC escrow
     const escrowValidator = {
-      type: "PlutusV2",
+      type: "PlutusV3",
       script: this.getEscrowPlutusScript(order, secretHash)
     };
 
