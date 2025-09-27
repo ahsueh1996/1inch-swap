@@ -1,0 +1,27 @@
+{
+  "name": "cardano-resolver",
+  "version": "1.0.0",
+  "description": "Lean off-chain Cardano resolver for 1inch Fusion",
+  "main": "dist/resolver.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/resolver.js",
+    "dev": "ts-node src/resolver.ts"
+  },
+  "dependencies": {
+    "@1inch/cross-chain-sdk": "^0.1.15",
+    "@1inch/fusion-sdk": "^2.1.12-rc.0",
+    "dotenv": "^16.4.0",
+    "ethers": "^6.13.0",
+    "ws": "^8.16.0",
+    "lucid-cardano": "^0.10.7",
+    "sqlite3": "^5.1.6",
+    "sqlite": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.4.0"
+  }
+}
