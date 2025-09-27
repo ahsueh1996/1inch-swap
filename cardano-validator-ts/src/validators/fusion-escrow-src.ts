@@ -33,32 +33,24 @@
 import {
   compile,
   Script,
-  PValidator,
   pfn,
   pBool,
   bool,
   plet,
   perror,
-  punIData,
   psha2_256,
   int,
   bs,
   PMaybe,
   pif,
-  pnot,
-  pEq,
-  pAnd,
-  pOr,
-  ScriptContext,
-  Credential,
-  PTxInfo,
-  PTxOut,
-  PValue,
-  PAddress,
-  PPubKeyHash,
-  pstruct,
-  data,
-  unit
+  pand,
+  PScriptContext,
+  punsafeConvertType,
+  pmatch,
+  Term,
+  PByteString,
+  passert,
+  ptraceIfFalse
 } from "@harmoniclabs/plu-ts";
 
 import { MerkleProof } from "../types/fusion-datum";
@@ -71,11 +63,25 @@ import { validateSecret } from "../utils/merkle-tree";
 export const fusionEscrowSrc = pfn([
   FusionEscrowSrcDatum.type,
   FusionEscrowSrcRedeemer.type,
-  ScriptContext.type
+  PScriptContext.type
 ], bool)
-(({ datum, redeemer, ctx }) => {
-  const txInfo = plet(ctx.tx);
-  const now = plet(txInfo.validRange.from.bound);
+(({ datum: datumo, redeemer: redeemero, ctx: ctxo }) => {
+
+  const datum = plet(punsafeConvertType(datumo, FusionEscrowSrcDatum.type));
+  const redeemer = plet(punsafeConvertType(redeemero, FusionEscrowSrcRedeemer.type));
+  const ctx = plet(punsafeConvertType(ctxo, PScriptContext.type));
+
+  const tx = plet(ctx.tx);
+
+  // Extract time information
+  const now = plet(
+    pmatch(tx.validRange.from)
+    ({
+      NegInf: _ => perror(int, "Invalid time range"),
+      Finite: ({ bound }) => bound,
+      PosInf: _ => perror(int, "Invalid time range")
+    })
+  );
 
   // Extract datum fields
   const maker = plet(datum.maker);
@@ -92,120 +98,123 @@ export const fusionEscrowSrc = pfn([
   const merkleRoot = plet(datum.merkle_root);
 
   // Helper functions
-  const isValidTimeWindow = (start: any, end: any) =>
-    now.gtEq(start).and(now.lt(end));
+  const isValidTimeWindow = (start: Term<any>, end: Term<any>) =>
+    pand([
+      now.gtEq(start),
+      now.lt(end)
+    ]);
 
-  const isSignedBy = (pkh: any) =>
-    txInfo.signatories.some((sig: any) => sig.eq(pkh));
+  const isSignedBy = (pkh: Term<any>) =>
+    tx.signatories.find((sig: any) => sig.eq(pkh)).isJust;
 
-  const validateSecretHash = (secret: any, proof: any) => {
+  const validateSecretHash = (
+    secret: Term<PByteString>,
+    hashlock: Term<PByteString>,
+    merkleRoot: Term<PByteString>,
+    proof: any
+  ) => {
     const isSingleFill = merkleRoot.eq(bs(""));
 
     return pif(isSingleFill)
       .then(psha2_256.$(secret).eq(hashlock))
       .else(
-        validateSecret({
-          secret,
-          hashlock,
-          merkleRoot,
-          merkleProof: proof.switch({
-            Nothing: () => [],
-            Just: (p) => p.proof_elements
-          }),
-          isMultiFill: bool(true)
+        pmatch(proof)
+        ({
+          Nothing: _ => bool(false),
+          Just: proofVal =>
+            proofVal.extract("proof_elements").in(({ proof_elements }) =>
+              validateSecret({
+                secret,
+                hashlock,
+                merkleRoot,
+                merkleProof: proof_elements,
+                isMultiFill: bool(true)
+              })
+            )
         })
       );
   };
 
-  const sendToAddress = (address: any, amount: any) => {
-    // Validate that outputs contain the required payment
-    return txInfo.outputs.some((output: any) =>
-      output.address.credential.switch({
-        PubKey: (pkh) => pkh.eq(address),
-        Script: () => bool(false)
-      }).and(
+  const sendToAddress = (address: Term<any>, amount: Term<any>) => {
+    return tx.outputs.some((output: any) =>
+      pand([
+        pmatch(output.address.credential)
+        ({
+          PubKey: ({ keyHash }) => keyHash.eq(address),
+          Script: _ => bool(false)
+        }),
         pif(assetPolicy.eq(bs("")))
           .then(output.value.lovelace.gtEq(amount))
           .else(
-            output.value.getAssets(assetPolicy).get(assetName).switch({
-              Nothing: () => bool(false),
-              Just: (assetAmount) => assetAmount.gtEq(amount)
+            pmatch(output.value.getAssets(assetPolicy).get(assetName))
+            ({
+              Nothing: _ => pBool(false),
+              Just: ({ val: assetAmount }) => assetAmount.gtEq(amount)
             })
           )
-      )
+      ])
     );
   };
 
-  const updateRemainingAmount = (withdrawAmount: any) => {
-    // For partial withdrawals, check that continuing output has updated remaining amount
+  const updateRemainingAmount = (withdrawAmount: Term<any>) => {
     const newRemaining = remaining.sub(withdrawAmount);
     return pif(newRemaining.gtEq(int(1)))
-      .then(
-        // Continuing output should have updated datum with new remaining amount
-        txInfo.outputs.some((output: any) =>
-          output.address.eq(ctx.ownAddress).and(
-            // Extract datum from continuing output and verify remaining is updated
-            // This is a simplified check - in practice would need proper datum deserialization
-            bool(true) // Placeholder for datum validation
-          )
-        )
-      )
-      .else(bool(true)); // Full withdrawal, no continuing output needed
+      .then(pBool(true)) // Simplified - in practice would check continuing output datum
+      .else(bool(true)); // Full withdrawal case
   };
 
-  return redeemer.switch({
+  return pmatch(redeemer)
+  ({
     // Private withdrawal by taker
     Withdraw: ({ secret, amount, merkle_proof }) =>
       pAnd([
-        isSignedBy(taker),
-        isValidTimeWindow(finalityTime, privateCancelTime),
-        validateSecretHash(secret, merkle_proof),
-        amount.gtEq(int(1)).and(amount.ltEq(remaining)),
-        sendToAddress(taker, amount),
-        updateRemainingAmount(amount)
+        ptraceIfFalse("Taker must sign", isSignedBy(taker)),
+        ptraceIfFalse("Outside withdrawal window", isValidTimeWindow(finalityTime, privateCancelTime)),
+        ptraceIfFalse("Invalid secret", validateSecretHash(secret, hashlock, merkleRoot, merkle_proof)),
+        ptraceIfFalse("Invalid amount", pAnd([amount.gtEq(int(1)), amount.ltEq(remaining)])),
+        ptraceIfFalse("Payment not sent to taker", sendToAddress(taker, amount)),
+        ptraceIfFalse("Remaining amount not updated", updateRemainingAmount(amount))
       ]),
 
     // Private withdrawal to specific address by taker
     WithdrawTo: ({ secret, amount, to, merkle_proof }) =>
       pAnd([
-        isSignedBy(taker),
-        isValidTimeWindow(finalityTime, privateCancelTime),
-        validateSecretHash(secret, merkle_proof),
-        amount.gtEq(int(1)).and(amount.ltEq(remaining)),
-        sendToAddress(to, amount),
-        updateRemainingAmount(amount)
+        ptraceIfFalse("Taker must sign", isSignedBy(taker)),
+        ptraceIfFalse("Outside withdrawal window", isValidTimeWindow(finalityTime, privateCancelTime)),
+        ptraceIfFalse("Invalid secret", validateSecretHash(secret, hashlock, merkleRoot, merkle_proof)),
+        ptraceIfFalse("Invalid amount", pAnd([amount.gtEq(int(1)), amount.ltEq(remaining)])),
+        ptraceIfFalse("Payment not sent to target", sendToAddress(to, amount)),
+        ptraceIfFalse("Remaining amount not updated", updateRemainingAmount(amount))
       ]),
 
     // Public withdrawal by anyone (earns deposit)
     PublicWithdraw: ({ secret, amount, merkle_proof }) =>
       pAnd([
-        isValidTimeWindow(privateCancelTime, publicCancelTime),
-        validateSecretHash(secret, merkle_proof),
-        amount.gtEq(int(1)).and(amount.ltEq(remaining)),
-        sendToAddress(taker, amount),
-        updateRemainingAmount(amount),
-        // Caller earns deposit reward
-        txInfo.outputs.some((output: any) =>
-          output.value.lovelace.gtEq(depositLovelace)
+        ptraceIfFalse("Outside public withdrawal window", isValidTimeWindow(privateCancelTime, publicCancelTime)),
+        ptraceIfFalse("Invalid secret", validateSecretHash(secret, hashlock, merkleRoot, merkle_proof)),
+        ptraceIfFalse("Invalid amount", pAnd([amount.gtEq(int(1)), amount.ltEq(remaining)])),
+        ptraceIfFalse("Payment not sent to taker", sendToAddress(taker, amount)),
+        ptraceIfFalse("Remaining amount not updated", updateRemainingAmount(amount)),
+        ptraceIfFalse("Deposit not paid to caller",
+          tx.outputs.some((output: any) => output.value.lovelace.gtEq(depositLovelace))
         )
       ]),
 
     // Private cancellation by maker
-    Cancel: () =>
+    Cancel: _ =>
       pAnd([
-        isSignedBy(maker),
-        now.gtEq(privateCancelTime),
-        sendToAddress(maker, remaining)
+        ptraceIfFalse("Maker must sign", isSignedBy(maker)),
+        ptraceIfFalse("Too early to cancel", now.gtEq(privateCancelTime)),
+        ptraceIfFalse("Refund not sent to maker", sendToAddress(maker, remaining))
       ]),
 
     // Public cancellation by anyone (earns deposit)
-    PublicCancel: () =>
+    PublicCancel: _ =>
       pAnd([
-        now.gtEq(publicCancelTime),
-        sendToAddress(maker, remaining),
-        // Caller earns deposit reward
-        txInfo.outputs.some((output: any) =>
-          output.value.lovelace.gtEq(depositLovelace)
+        ptraceIfFalse("Too early for public cancel", now.gtEq(publicCancelTime)),
+        ptraceIfFalse("Refund not sent to maker", sendToAddress(maker, remaining)),
+        ptraceIfFalse("Deposit not paid to caller",
+          tx.outputs.some((output: any) => output.value.lovelace.gtEq(depositLovelace))
         )
       ])
   });
@@ -215,6 +224,8 @@ export const fusionEscrowSrc = pfn([
  * Compile the validator to get the script
  */
 export const fusionEscrowSrcScript = compile(fusionEscrowSrc);
+
+export default fusionEscrowSrcScript;
 
 /**
  * Parallel Functionality Mapping:

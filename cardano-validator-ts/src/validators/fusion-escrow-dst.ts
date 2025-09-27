@@ -30,7 +30,6 @@
 import {
   compile,
   Script,
-  PValidator,
   pfn,
   pBool,
   bool,
@@ -43,10 +42,9 @@ import {
   PMaybe,
   pif,
   pnot,
-  pEq,
-  pAnd,
-  pOr,
-  ScriptContext,
+  pand,
+  por,
+  PScriptContext,
   Credential,
   PTxInfo,
   PTxOut,
@@ -55,7 +53,12 @@ import {
   PPubKeyHash,
   pstruct,
   data,
-  unit
+  unit,
+  punsafeConvertType,
+  pmatch,
+  Term,
+  PByteString,
+  PBool
 } from "@harmoniclabs/plu-ts";
 
 import { FusionEscrowDatum, MerkleProof } from "../types/fusion-datum";
@@ -68,11 +71,24 @@ import { validateSecret } from "../utils/merkle-tree";
 export const fusionEscrowDst = pfn([
   FusionEscrowDatum.type,
   FusionEscrowRedeemer.type,
-  ScriptContext.type
+  PScriptContext.type
 ], bool)
-(({ datum, redeemer, ctx }) => {
+(({ datumo, redeemero, ctxo }) => {
+
+  
+  const datum = plet(punsafeConvertType(datumo, FusionEscrowDatum.type));
+  const ctx = plet(punsafeConvertType(ctxo, PScriptContext.type));
+  const redeemer = plet(punsafeConvertType(redeemero, FusionEscrowRedeemer.type));
+
   const txInfo = plet(ctx.tx);
-  const now = plet(txInfo.validRange.from.bound);
+  const now = plet(
+    pmatch(txInfo.validRange.from)
+    ({
+      NegInf: _ => perror(int, "Invalid time range"),
+      Finite: ({ bound }) => bound,
+      PosInf: _ => perror(int, "Invalid time range")
+    })
+  );
 
   // Extract datum fields
   const maker = plet(datum.maker);
@@ -92,45 +108,54 @@ export const fusionEscrowDst = pfn([
     now.gtEq(start).and(now.lt(end));
 
   const isSignedBy = (pkh: any) =>
-    txInfo.signatories.some((sig: any) => sig.eq(pkh));
+    txInfo.signatories.find((sig: any) => sig.eq(pkh)).isJust;
 
-  const validateSecretHash = (secret: any, proof: any) => {
-    const isSingleFill = merkleRoot.switch({
-      Nothing: () => bool(true),
-      Just: () => bool(false)
-    });
-
-    return pif(isSingleFill)
-      .then(psha2_256.$(secret).eq(hashlock))
-      .else(
-        merkleRoot.switch({
-          Nothing: () => bool(false),
-          Just: (root) => validateSecret({
-            secret,
-            hashlock,
-            merkleRoot: root,
-            merkleProof: proof.switch({
-              Nothing: () => [],
-              Just: (p) => p.proof_elements
-            }),
-            isMultiFill: bool(true)
+  const validateSecretHash = (
+    secret: Term<PByteString>,
+    hashlock: Term<PByteString>,
+    merkleRoot: any,
+    proof: any
+  ): Term<PBool> =>
+    pmatch(merkleRoot)
+    ({
+      Nothing: _ =>
+        // Single-fill branch
+        psha2_256.$(secret).eq(hashlock),
+  
+      Just: justVal =>
+        justVal.extract("val").in(({ val: root }) =>
+          pmatch(proof)
+          ({
+            Nothing: _ =>
+              // Missing proof in multi-fill case → fail
+              perror(PBool),
+  
+            Just: proofVal =>
+              proofVal.extract("proof_elements").in(({ proof_elements }) =>
+                validateSecret({
+                  secret,
+                  hashlock,
+                  merkleRoot: root,
+                  merkleProof: proof_elements,
+                  isMultiFill: ptrue
+                })
+              )
           })
-        })
-      );
-  };
+        )
+    });
 
   const sendToAddress = (address: any, amount: any) => {
     // Validate that outputs contain the required payment
     return txInfo.outputs.some((output: any) =>
       output.address.credential.switch({
         PubKey: (pkh) => pkh.eq(address),
-        Script: () => bool(false)
+        Script: () => pBool(false)
       }).and(
         pif(assetPolicy.eq(bs("")))
           .then(output.value.lovelace.gtEq(amount))
           .else(
             output.value.getAssets(assetPolicy).get(assetName).switch({
-              Nothing: () => bool(false),
+              Nothing: () => pBool(false),
               Just: (assetAmount) => assetAmount.gtEq(amount)
             })
           )
@@ -141,7 +166,7 @@ export const fusionEscrowDst = pfn([
   return redeemer.switch({
     // Private withdrawal by beneficiary
     Withdraw: ({ secret, amount, merkle_proof }) =>
-      pAnd([
+      pand([
         isSignedBy(beneficiary),
         isValidTimeWindow(userDeadline, cancelAfter),
         validateSecretHash(secret, merkle_proof),
@@ -151,7 +176,7 @@ export const fusionEscrowDst = pfn([
 
     // Public withdrawal by anyone (earns deposit)
     PublicWithdraw: ({ secret, amount, merkle_proof }) =>
-      pAnd([
+      pand([
         now.gtEq(cancelAfter),
         validateSecretHash(secret, merkle_proof),
         amount.gtEq(int(1)).and(amount.ltEq(remaining)),
@@ -164,7 +189,7 @@ export const fusionEscrowDst = pfn([
 
     // Private cancellation by resolver
     Cancel: () =>
-      pAnd([
+      pand([
         isSignedBy(resolver),
         now.gtEq(cancelAfter),
         sendToAddress(resolver, remaining)
@@ -172,7 +197,7 @@ export const fusionEscrowDst = pfn([
 
     // Public cancellation by anyone (earns deposit)
     PublicCancel: () =>
-      pAnd([
+      pand([
         now.gtEq(cancelAfter.add(int(86400000))), // 24 hours after cancel_after
         sendToAddress(resolver, remaining),
         // Caller earns deposit reward
