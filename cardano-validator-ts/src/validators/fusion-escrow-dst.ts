@@ -27,25 +27,166 @@
  * - Cross-chain compatibility with 1inch Fusion
  */
 
-import { compile, Script } from "@harmoniclabs/plu-ts";
+import {
+  compile,
+  Script,
+  PValidator,
+  pfn,
+  pBool,
+  bool,
+  plet,
+  perror,
+  punIData,
+  psha2_256,
+  int,
+  bs,
+  PMaybe,
+  pif,
+  pnot,
+  pEq,
+  pAnd,
+  pOr,
+  ScriptContext,
+  Credential,
+  PTxInfo,
+  PTxOut,
+  PValue,
+  PAddress,
+  PPubKeyHash,
+  pstruct,
+  data,
+  unit
+} from "@harmoniclabs/plu-ts";
 
-// Placeholder validator that compiles successfully
-// TODO: Implement full PLU-TS validator once library compatibility is resolved
-export const fusionEscrowDst = "placeholder_validator_script_bytes";
+import { FusionEscrowDatum, MerkleProof } from "../types/fusion-datum";
+import { FusionEscrowRedeemer } from "../types/fusion-redeemer";
+import { validateSecret } from "../utils/merkle-tree";
+
+/**
+ * Main validator function for fusion escrow destination
+ */
+export const fusionEscrowDst = pfn([
+  FusionEscrowDatum.type,
+  FusionEscrowRedeemer.type,
+  ScriptContext.type
+], bool)
+(({ datum, redeemer, ctx }) => {
+  const txInfo = plet(ctx.tx);
+  const now = plet(txInfo.validRange.from.bound);
+
+  // Extract datum fields
+  const maker = plet(datum.maker);
+  const resolver = plet(datum.resolver);
+  const beneficiary = plet(datum.beneficiary);
+  const assetPolicy = plet(datum.asset_policy);
+  const assetName = plet(datum.asset_name);
+  const remaining = plet(datum.remaining);
+  const hashlock = plet(datum.hashlock);
+  const userDeadline = plet(datum.user_deadline);
+  const cancelAfter = plet(datum.cancel_after);
+  const depositLovelace = plet(datum.deposit_lovelace);
+  const merkleRoot = plet(datum.merkle_root);
+
+  // Helper functions
+  const isValidTimeWindow = (start: any, end: any) =>
+    now.gtEq(start).and(now.lt(end));
+
+  const isSignedBy = (pkh: any) =>
+    txInfo.signatories.some((sig: any) => sig.eq(pkh));
+
+  const validateSecretHash = (secret: any, proof: any) => {
+    const isSingleFill = merkleRoot.switch({
+      Nothing: () => bool(true),
+      Just: () => bool(false)
+    });
+
+    return pif(isSingleFill)
+      .then(psha2_256.$(secret).eq(hashlock))
+      .else(
+        merkleRoot.switch({
+          Nothing: () => bool(false),
+          Just: (root) => validateSecret({
+            secret,
+            hashlock,
+            merkleRoot: root,
+            merkleProof: proof.switch({
+              Nothing: () => [],
+              Just: (p) => p.proof_elements
+            }),
+            isMultiFill: bool(true)
+          })
+        })
+      );
+  };
+
+  const sendToAddress = (address: any, amount: any) => {
+    // Validate that outputs contain the required payment
+    return txInfo.outputs.some((output: any) =>
+      output.address.credential.switch({
+        PubKey: (pkh) => pkh.eq(address),
+        Script: () => bool(false)
+      }).and(
+        pif(assetPolicy.eq(bs("")))
+          .then(output.value.lovelace.gtEq(amount))
+          .else(
+            output.value.getAssets(assetPolicy).get(assetName).switch({
+              Nothing: () => bool(false),
+              Just: (assetAmount) => assetAmount.gtEq(amount)
+            })
+          )
+      )
+    );
+  };
+
+  return redeemer.switch({
+    // Private withdrawal by beneficiary
+    Withdraw: ({ secret, amount, merkle_proof }) =>
+      pAnd([
+        isSignedBy(beneficiary),
+        isValidTimeWindow(userDeadline, cancelAfter),
+        validateSecretHash(secret, merkle_proof),
+        amount.gtEq(int(1)).and(amount.ltEq(remaining)),
+        sendToAddress(beneficiary, amount)
+      ]),
+
+    // Public withdrawal by anyone (earns deposit)
+    PublicWithdraw: ({ secret, amount, merkle_proof }) =>
+      pAnd([
+        now.gtEq(cancelAfter),
+        validateSecretHash(secret, merkle_proof),
+        amount.gtEq(int(1)).and(amount.ltEq(remaining)),
+        sendToAddress(beneficiary, amount),
+        // Caller earns deposit reward
+        txInfo.outputs.some((output: any) =>
+          output.value.lovelace.gtEq(depositLovelace)
+        )
+      ]),
+
+    // Private cancellation by resolver
+    Cancel: () =>
+      pAnd([
+        isSignedBy(resolver),
+        now.gtEq(cancelAfter),
+        sendToAddress(resolver, remaining)
+      ]),
+
+    // Public cancellation by anyone (earns deposit)
+    PublicCancel: () =>
+      pAnd([
+        now.gtEq(cancelAfter.add(int(86400000))), // 24 hours after cancel_after
+        sendToAddress(resolver, remaining),
+        // Caller earns deposit reward
+        txInfo.outputs.some((output: any) =>
+          output.value.lovelace.gtEq(depositLovelace)
+        )
+      ])
+  });
+});
 
 /**
  * Compile the validator to get the script
- * TODO: Replace with actual compiled PLU-TS validator
  */
-export const fusionEscrowDstScript = {
-  type: "PlutusV3" as const,
-  bytes: new Uint8Array([0]), // Placeholder bytes
-  cbor: "",
-  hash: "",
-  cborHex: "",
-  toString: () => "FusionEscrowDst",
-  toJson: () => ({})
-};
+export const fusionEscrowDstScript = compile(fusionEscrowDst);
 
 /**
  * Parallel Functionality Mapping:

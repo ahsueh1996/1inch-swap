@@ -18,7 +18,6 @@ export * from "./types/fusion-src-redeemer";
 export * from "./validators/fusion-escrow-dst";
 export * from "./validators/fusion-escrow-src";
 export * from "./builders/escrow-builder";
-export * from "./builders/escrow-src-builder";
 export * from "./builders/fusion-integration";
 export * from "./utils/merkle-tree";
 
@@ -50,7 +49,6 @@ export {
 } from "./validators/fusion-escrow-src";
 
 export { FusionEscrowBuilder } from "./builders/escrow-builder";
-export { FusionEscrowSrcBuilder } from "./builders/escrow-src-builder";
 export { FusionCardanoIntegration } from "./builders/fusion-integration";
 
 // Utility functions

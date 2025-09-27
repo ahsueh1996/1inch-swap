@@ -48,7 +48,7 @@ export const FusionEscrowDatum = pstruct({
 export const MerkleProof = pstruct({
   MerkleProof: {
     leaf_index: int,                   // Index of the secret in merkle tree
-    proof_elements: list(bs).type      // Merkle proof path
+    proof_elements: list(bs)           // Merkle proof path
   }
 });
 
@@ -63,6 +63,6 @@ export const AssetInfo = pstruct({
   }
 });
 
-export type FusionEscrowDatumType = StructT<typeof FusionEscrowDatum.type>;
-export type MerkleProofType = StructT<typeof MerkleProof.type>;
-export type AssetInfoType = StructT<typeof AssetInfo.type>;
+export type FusionEscrowDatumType = StructT<typeof FusionEscrowDatum>;
+export type MerkleProofType = StructT<typeof MerkleProof>;
+export type AssetInfoType = StructT<typeof AssetInfo>;

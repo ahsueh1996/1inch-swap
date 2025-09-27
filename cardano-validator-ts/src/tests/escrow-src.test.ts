@@ -1,3 +1,13 @@
+// TODO: This test file needs to be updated to use the new unified FusionEscrowBuilder API
+// The old FusionEscrowSrcBuilder has been merged into FusionEscrowBuilder
+// New methods to use:
+// - deploySourceEscrow() instead of buildDeployTx()
+// - withdrawFromSource() instead of buildWithdrawTx()
+// - withdrawToFromSource() instead of buildWithdrawToTx()
+// - publicWithdrawFromSource() instead of buildPublicWithdrawTx()
+// - cancelSource() instead of buildCancelTx()
+// - publicCancelSource() instead of buildPublicCancelTx()
+
 import { describe, it, expect } from "@jest/globals";
 import {
   PubKeyHash,
@@ -13,16 +23,17 @@ import {
 } from "@harmoniclabs/plu-ts";
 
 import {
-  FusionEscrowSrcBuilder
-} from "../builders/escrow-src-builder";
+  FusionEscrowBuilder
+} from "../builders/escrow-builder";
 import {
   FusionEscrowSrcDatum,
   FusionEscrowSrcExtendedRedeemer
 } from "../types/fusion-src-redeemer";
 
 describe("Fusion Escrow Source", () => {
-  const network = "testnet";
-  const builder = new FusionEscrowSrcBuilder(network);
+  const blockfrostProjectId = "test_project_id";
+  const networkId = 0; // testnet
+  const builder = new FusionEscrowBuilder(blockfrostProjectId, networkId);
 
   // Test addresses and keys
   const makerPkh = PubKeyHash.from("00".repeat(28));

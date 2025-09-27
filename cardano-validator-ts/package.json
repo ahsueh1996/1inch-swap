@@ -14,8 +14,7 @@
     "@1inch/fusion-sdk": "^2.1.12-rc.0",
     "@harmoniclabs/blockfrost-pluts": "^0.2.4",
     "@harmoniclabs/plu-ts": "^0.8.2",
-    "crypto": "^1.0.1",
-    "lucid-cardano": "^0.10.7"
+    "crypto": "^1.0.1"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
