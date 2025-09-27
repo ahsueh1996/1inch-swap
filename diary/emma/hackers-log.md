@@ -23,3 +23,7 @@
 * 1738 Logging before going for a nap... All components are more or less done (but full of bugs!). We will debug while integrating. If time permits :finger-crossed, maybe we can implement an MCP tool as the swap UI (e.g. indicate your intention to Claude while enabling the cardanoswap+ tools and it will do it for you!)
 * 2208 Awake now! Eating the food Albert saved me... :happy :thanks 11 hours left! Time to integrate and troubleshoot!
 * 2326 Wifi is still so horrible... even `npm i` can take forever... everything keeps cutting out...
+
+## 20250927
+
+* 0203 GOT AN ETHERNET CABLE and ADAPTER FINALLY! THANKS ETHGLOBAL TEAM. :happy-tears Wow. Developing is impossible these days without internet....

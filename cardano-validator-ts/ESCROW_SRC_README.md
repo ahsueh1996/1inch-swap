@@ -83,25 +83,25 @@ FusionEscrowSrcExtendedRedeemer =
 ### 1. Deploy Source Escrow (Fund Locking)
 
 ```typescript
-import { FusionEscrowSrcBuilder } from "./builders/escrow-src-builder";
+import { FusionEscrowBuilder } from "./builders/escrow-builder";
 
-const builder = new FusionEscrowSrcBuilder("testnet");
+const blockfrostProjectId = "your_blockfrost_project_id";
+const networkId = 0; // 0 for testnet, 1 for mainnet
+const builder = new FusionEscrowBuilder(blockfrostProjectId, networkId);
 
-const deployTx = builder.buildDeployTx({
-  maker: makerPkh,
-  resolver: resolverPkh,
-  beneficiary: takerPkh,
+const deployTx = await builder.deploySourceEscrow({
+  maker: makerAddress,
+  taker: takerAddress,
+  resolver: resolverAddress,
   amount: 1000000n, // 1 ADA in lovelaces
-  hashlock: secretHash,
-  userDeadline: Math.floor(Date.now() / 1000) + 3600, // 1 hour
-  publicDeadline: Math.floor(Date.now() / 1000) + 7200, // 2 hours
-  cancelAfter: Math.floor(Date.now() / 1000) + 86400, // 24 hours
-  depositLovelace: 2000000n, // 2 ADA deposit
-  orderHash: fusionOrderHash,
-  fillId: 1,
-  finalityBlocks: 10,
-  deployedAtBlock: currentBlock,
-  makerUtxos: [makerUtxo]
+  secret_hash: secretHash,
+  finality_time: Math.floor(Date.now() / 1000) + 600, // 10 minutes
+  private_cancel_time: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+  public_cancel_time: Math.floor(Date.now() / 1000) + 7200, // 2 hours
+  deposit_lovelace: 2000000n, // 2 ADA deposit
+  order_hash: fusionOrderHash,
+  fill_id: 1,
+  merkle_root: merkleRoot // optional for multi-fill
 });
 ```
 
@@ -109,32 +109,31 @@ const deployTx = builder.buildDeployTx({
 
 ```typescript
 // Withdraw to taker's own address
-const withdrawTx = builder.buildWithdrawTx({
+const withdrawTx = await builder.withdrawFromSource({
   escrowUtxo: escrowUtxo,
   secret: preimage,
   amount: 1000000n,
-  takerAddress: takerAddress
+  taker_address: takerAddress
 });
 
 // Withdraw to different target address
-const withdrawToTx = builder.buildWithdrawToTx({
+const withdrawToTx = await builder.withdrawToFromSource({
   escrowUtxo: escrowUtxo,
   secret: preimage,
   amount: 1000000n,
-  target: targetPkh,
-  targetAddress: targetAddress
+  to_address: targetAddress
 });
 ```
 
 ### 3. Public Withdrawal (Anyone Can Call)
 
 ```typescript
-const publicWithdrawTx = builder.buildPublicWithdrawTx({
+const publicWithdrawTx = await builder.publicWithdrawFromSource({
   escrowUtxo: escrowUtxo,
   secret: preimage,
   amount: 1000000n,
-  takerAddress: takerAddress,
-  callerAddress: callerAddress // Gets deposit reward
+  taker_address: takerAddress,
+  caller_address: callerAddress // Gets deposit reward
 });
 ```
 
@@ -142,16 +141,16 @@ const publicWithdrawTx = builder.buildPublicWithdrawTx({
 
 ```typescript
 // Private cancellation (maker only)
-const cancelTx = builder.buildCancelTx({
+const cancelTx = await builder.cancelSource({
   escrowUtxo: escrowUtxo,
-  makerAddress: makerAddress
+  maker_address: makerAddress
 });
 
 // Public cancellation (anyone can call)
-const publicCancelTx = builder.buildPublicCancelTx({
+const publicCancelTx = await builder.publicCancelSource({
   escrowUtxo: escrowUtxo,
-  makerAddress: makerAddress,
-  callerAddress: callerAddress // Gets deposit reward
+  maker_address: makerAddress,
+  caller_address: callerAddress // Gets deposit reward
 });
 ```
 
