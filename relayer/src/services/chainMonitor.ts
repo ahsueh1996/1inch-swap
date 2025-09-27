@@ -1,22 +1,22 @@
 import { ethers } from 'ethers';
-// import { Lucid, Blockfrost, fromHex, toHex } from 'lucid-cardano';
-import { loadLucid } from "../utils/lucidLoader";
+import { Lucid, Blockfrost, fromHex, toHex } from 'lucid-cardano';
+//import { loadLucid } from "../utils/lucidLoader";
 import { SwapRegistry } from '../database';
 import { RelayerConfig, SecretRevealEvent, ChainMonitor } from '../types';
 import { EventEmitter } from 'events';
 
-let Lucid: any;
-let Blockfrost: any;
-let fromHex: any;
-let toHex: any;
+// let Lucid: any;
+// let Blockfrost: any;
+// let fromHex: any;
+// let toHex: any;
 
-(async () => {
-  const m = await loadLucid();
-  Lucid = m.Lucid;
-  Blockfrost = m.Blockfrost;
-  fromHex = m.fromHex;
-  toHex = m.toHex;
-})();
+// (async () => {
+//   const m = await loadLucid();
+//   Lucid = m.Lucid;
+//   Blockfrost = m.Blockfrost;
+//   fromHex = m.fromHex;
+//   toHex = m.toHex;
+// })();
 
 export interface EscrowEvent {
   type: 'EscrowCreated' | 'SecretRevealed' | 'Withdrawn' | 'Cancelled';

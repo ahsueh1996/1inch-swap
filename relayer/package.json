@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Cross-chain relayer/watcher for CardanoSwap+ HTLC swaps",
   "main": "dist/relayer.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/relayer.js",

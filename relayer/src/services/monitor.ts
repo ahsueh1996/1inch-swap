@@ -1,5 +1,6 @@
-import { SwapRegistry } from '../database';
-import { RelayerConfig, SwapRecord } from '../types';
+// ✅ must include file and .js extension for local modules
+import { SwapRegistry } from "../database/index.js";
+import { RelayerConfig, SwapRecord } from "../types/index.js";
 import { EventEmitter } from 'events';
 import cron from 'node-cron';
 
