@@ -16,7 +16,7 @@ A sophisticated cross-chain resolver for Cardano using [plu-ts](https://github.c
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   EVM Chains    │◄──►│  Cardano Resolver │◄──►│    Cardano      │
+│   EVM Chains    │◄──►│ Cardano Resolver │◄──►│    Cardano      │
 │   (Ethereum)    │    │     (plu-ts)     │    │    Network      │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                               │
