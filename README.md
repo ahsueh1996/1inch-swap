@@ -50,3 +50,32 @@ Requirements:
 - Swap functionality should be bidirectional (swaps should be possible to and from Ethereum) 
 - Onchain execution of token transfers should be presented during the final demo
 - Proper Git commit history (no single-commit entries on the final day)
+
+## Flow Diagram
+```uml-sequence-diagram
+title CardanoSwap+
+
+participant CHAIN A
+participant ESCROW A
+participant RELAYER/WATCHER
+participant ESCROW B
+participant CHAIN B
+
+CHAIN A->RELAYER/WATCHER:(1) user create signed intent (through fusion-sdk)
+RELAYER/WATCHER->CHAIN B:(2) create order (invokes resolver's escrow factory)
+ESCROW B<-CHAIN B:(3) resolver deposits safety deposit & swap amount
+activate ESCROW B
+ESCROW A<-CHAIN B:(4) resolver deposits user's tokens on src chain
+activate ESCROW A
+ESCROW A->RELAYER/WATCHER:(5a) check escrows have..
+ESCROW B->RELAYER/WATCHER:(5b) ..exact same content
+CHAIN A->RELAYER/WATCHER:(6a) user provides secret (from frontend)
+RELAYER/WATCHER->CHAIN B:(6b) relayer passes secret to resolver
+ESCROW A<-CHAIN B:(7) resolver unlocks tokens on src chain for themselves, simultaneously revealing secret to other resolvers
+deactivate ESCROW A
+ESCROW B<-CHAIN B:(8) resolver unlocks swapped token for user, recovering their safety deposit
+deactivate ESCROW B
+alt resolver (A) fails to unlock tokens in time
+ESCROW B<-CHAIN B:(8 alt) resolver B unlocks token for user, taking resolver A's safety deposit
+end
+```
