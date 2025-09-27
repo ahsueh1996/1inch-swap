@@ -1,11 +1,14 @@
-export interface SwapStatus {
-  PENDING = 'pending',
-  AWAITING_SECRET = 'awaiting_secret',
-  SECRET_SHARED = 'secret_shared',
-  COMPLETED = 'completed',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled'
-}
+export const SwapStatus = {
+  PENDING: 'pending',
+  AWAITING_SECRET: 'awaiting_secret',
+  SECRET_SHARED: 'secret_shared',
+  COMPLETED: 'completed',
+  EXPIRED: 'expired',
+  CANCELLED: 'cancelled',
+} as const;
+
+// 👇 this gives you a type of all the values
+export type SwapStatusType = typeof SwapStatus[keyof typeof SwapStatus];
 
 export interface SwapParams {
   orderId: string;
@@ -27,7 +30,7 @@ export interface SwapParams {
 export interface SwapRecord {
   id: string;
   orderId: string;
-  status: keyof typeof SwapStatus;
+  status: SwapStatusType;
   params: SwapParams;
   secret?: string;
   secretSharedAt?: number;
