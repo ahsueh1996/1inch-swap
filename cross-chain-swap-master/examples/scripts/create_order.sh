@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-source ../.env
+source .env
 
 CURRENT_DIR=$(dirname "$0")
 CONFIG_PATH="${CURRENT_DIR}/../config/config.json"
