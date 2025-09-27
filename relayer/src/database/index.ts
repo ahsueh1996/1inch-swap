@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
-import { SwapRecord, SwapParams, SwapStatus } from '../types';
+import { SwapRecord, SwapParams, SwapStatusType } from '../types';
 
 export class SwapRegistry {
   private db: Database<sqlite3.Database, sqlite3.Statement> | null = null;
@@ -80,7 +80,7 @@ export class SwapRegistry {
     return record;
   }
 
-  async updateSwapStatus(orderId: string, status: keyof typeof SwapStatus): Promise<void> {
+  async updateSwapStatus(orderId: string, status: SwapStatusType): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
 
     await this.db.run(
