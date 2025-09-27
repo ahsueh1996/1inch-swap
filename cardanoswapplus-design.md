@@ -6,7 +6,7 @@ Modelling after Ronakgupta11's HTLC design but empowered with Fusion+'s dutch au
 2. Fusion Layer (off-chain Dutch auction + resolver selection)
 3. EVM components (Escrow contracts)
 4. Cardano components (EscrowDst-equivalent validator with UTXO-based partial fill extension)
-5. Watcher (bridges seecrets and timelocks to maintain atomicity)
+5. Watcher/Relayer (forward secrets and timelocks to maintain atomicity)
 
 ## 1inch Fusion Integration Plan
 

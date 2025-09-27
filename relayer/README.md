@@ -1,108 +1,227 @@
-# CardanoSwap+ Watcher / Relayer
+# CardanoSwap+ Relayer Implementation
 
-The Watcher / Relayer is an off-chain service that ensures fair and safe execution of cross-chain HTLC swaps between EVM and Cardano.
+A complete implementation of the CardanoSwap+ Watcher/Relayer service for cross-chain HTLC swaps between EVM and Cardano networks.
 
----
+## Overview
 
-## 🎯 Purpose
+This relayer ensures fair and safe execution of cross-chain swaps by:
 
-The watcher:
+1. **Validating** maker ↔ taker swap parameters across chains
+2. **Mediating** secret sharing between Maker and Resolver
+3. **Enforcing** liveness by publishing secrets publicly if Resolver stalls
+4. **Monitoring** deadlines and triggering refunds/cancels
 
-1. Validates maker ↔ taker swap parameters across chains.
-2. Mediates secret sharing between Maker and Resolver.
-3. Enforces liveness by publishing secrets publicly if Resolver stalls.
-4. Monitors deadlines and triggers refunds / public cancels.
+## Architecture
 
-This ensures fairness, safety, and liveness even when one party misbehaves.
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Swap Registry │    │ Parameter       │    │ Secret Mediator │
+│   (SQLite)      │    │ Validator       │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │
+         ┌───────────────────────┼───────────────────────┐
+         │                       │                       │
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Liveness        │    │ Timeout Monitor │    │ Chain Monitor   │
+│ Enforcer        │    │                 │    │ Service         │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         └───────────────────────┼───────────────────────┘
+                                 │
+                        ┌─────────────────┐
+                        │   REST API      │
+                        │                 │
+                        └─────────────────┘
+```
 
----
+## Quick Start
 
-## 🧩 Components
+### 1. Installation
 
-### 1. Swap Registry
-- Persistent database of active swaps (SQLite/Redis).
-- Fields:
-  - orderId
-  - Maker params (assets, amounts, deadlines, hashlock, addresses)
-  - Taker params (from Fusion/LOP)
-  - Status (pending, awaiting_secret, secret_shared, completed, expired)
-  - Timestamps for deadlines
+```bash
+cd relayer
+npm install
+```
 
-### 2. Parameter Validator
-- Compares Maker escrow vs Taker Fusion order:
-  - Asset types match
-  - Ratio within tolerance
-  - Deadlines safe (user_deadline < refund_after)
-  - Same hashlock
+### 2. Configuration
 
-### 3. Secret Mediator
-- Signals Maker to provide secret (preimage).
-- Holds secret until Resolver confirms readiness.
-- Forwards secret to Resolver to finalize payout.
+Copy the environment template:
+```bash
+cp .env.example .env
+```
 
-### 4. Liveness Enforcer
-- Starts a countdown when secret is given to Resolver.
-- If Resolver does not complete within X seconds:
-  - Publishes secret publicly (IPFS, API, or broadcast).
-  - Opens swap to any resolver to complete.
+Edit `.env` with your configuration:
+```env
+# Chain RPC URLs
+ETH_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+CARDANO_NODE_URL=https://cardano-mainnet.blockfrost.io/api/v0
+CARDANO_PROJECT_ID=YOUR_BLOCKFROST_PROJECT_ID
 
-### 5. Timeout Monitor
-- Watches all swaps:
-  - If user_deadline passes → publish secret if available.
-  - If cancel_after passes → call publicCancel.
+# Database
+DB_PATH=./swaps.db
 
----
+# Relayer Configuration
+MAX_SECRET_HOLD_TIME=300
+VALIDATION_TOLERANCE=0.01
+POLL_INTERVAL=10000
 
-## 🔄 Event Flow
+# API Configuration
+PORT=3000
+API_SECRET=your_secret_key
+```
 
-1. Maker creates swap intent (Fusion order + on-chain escrow).
-2. Watcher validates Maker ↔ Taker params → marks pending.
-3. Watcher requests secret from Maker.
-4. Resolver wins Fusion auction → Watcher forwards secret.
-5. Resolver executes destination escrow.
-6. If Resolver stalls past timeout:
-   - Watcher publishes secret publicly.
-   - Any other resolver can finish payout.
-7. Watcher updates swap status (completed or expired).
+### 3. Build and Run
 
----
+```bash
+# Development
+npm run dev
 
-## 🛡 Security Properties
+# Production
+npm run build
+npm start
+```
 
-- Fairness: Resolver only gets secret when ready.  
-- Liveness: Secret goes public if Resolver stalls.  
-- Safety: Maker funds only move if secret matches hashlock.  
-- Transparency: Secrets & deadlines logged, optionally mirrored to IPFS.  
+## API Endpoints
 
----
+### Create Swap
+```bash
+POST /swaps
+Authorization: Bearer {API_SECRET}
 
-## ⚙️ Configurable Parameters
+{
+  "orderId": "order_123",
+  "makerAddress": "0x...",
+  "takerAddress": "0x...",
+  "srcToken": "0x...",
+  "dstToken": "ada",
+  "srcAmount": "1000000000000000000",
+  "dstAmount": "2000000",
+  "hashlock": "0x...",
+  "userDeadline": 1640995200,
+  "cancelAfter": 1641000000,
+  "chainIdSrc": 1,
+  "chainIdDst": 2147484648
+}
+```
 
-- maxSecretHoldTime → grace period before secret goes public  
-- validationTolerance → % deviation allowed in amounts  
-- pollInterval → chain monitoring frequency  
+### Provide Secret
+```bash
+POST /swaps/{orderId}/secret
+Authorization: Bearer {API_SECRET}
 
----
+{
+  "secret": "my_secret_preimage"
+}
+```
 
-## 📊 Sequence Diagram
+### Get Swap Status
+```bash
+GET /swaps/{orderId}
+Authorization: Bearer {API_SECRET}
+```
 
-`mermaid
-sequenceDiagram
-    participant Maker
-    participant Watcher
-    participant Resolver
-    participant Public
+### Get All Active Swaps
+```bash
+GET /swaps?status=active
+Authorization: Bearer {API_SECRET}
+```
 
-    Maker->>Watcher: Publish order (params + hashlock)
-    Watcher->>Maker: Validate params, request secret
-    Maker->>Watcher: Provide secret (hold in escrow)
-    Watcher->>Resolver: Send secret (once auction won)
-    Resolver->>Cardano/EVM: Execute escrow with secret
-    Note over Resolver,Watcher: Grace period countdown
-    alt Resolver finishes in time
-        Watcher->>Watcher: Mark swap completed
-    else Resolver stalls
-        Watcher->>Public: Publish secret (IPFS / API)
-        Public->>Cardano/EVM: Any resolver can complete
-    end
-    Watcher->>Watcher: Handle cancels / refunds on deadline
+### Get Relayer Status
+```bash
+GET /status
+Authorization: Bearer {API_SECRET}
+```
+
+### Force Reveal Secret
+```bash
+POST /swaps/{orderId}/force-reveal
+Authorization: Bearer {API_SECRET}
+
+{
+  "reason": "emergency_reveal"
+}
+```
+
+## Event Flow
+
+1. **Swap Creation**: Maker creates swap intent, relayer validates parameters
+2. **Secret Request**: Relayer requests secret from maker
+3. **Secret Provision**: Maker provides secret, relayer validates against hashlock
+4. **Resolver Ready**: When resolver wins auction, relayer shares secret
+5. **Grace Period**: Relayer monitors resolver completion
+6. **Liveness Enforcement**: If resolver stalls, secret is published publicly
+7. **Completion**: Swap marked complete when secret is revealed on-chain
+
+## Security Features
+
+- **Parameter Validation**: Comprehensive validation of swap parameters
+- **Secret Verification**: Secrets are verified against hashlocks before sharing
+- **Deadline Monitoring**: Continuous monitoring of user and cancel deadlines
+- **Grace Period Enforcement**: Configurable grace period before public reveal
+- **Chain Monitoring**: Real-time monitoring of both EVM and Cardano chains
+- **IPFS Publishing**: Optional publication of secrets to IPFS for transparency
+
+## Configuration Options
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `MAX_SECRET_HOLD_TIME` | Grace period before public secret reveal (seconds) | 300 |
+| `VALIDATION_TOLERANCE` | Allowed deviation in token amounts (%) | 0.01 |
+| `POLL_INTERVAL` | Chain monitoring frequency (ms) | 10000 |
+| `USER_DEADLINE_BUFFER` | Minimum time before user deadline (seconds) | 3600 |
+| `CANCEL_AFTER_BUFFER` | Minimum time before cancel deadline (seconds) | 7200 |
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── api/           # REST API endpoints
+├── database/      # SQLite database layer
+├── services/      # Core business logic
+│   ├── validator.ts    # Parameter validation
+│   ├── mediator.ts     # Secret mediation
+│   ├── enforcer.ts     # Liveness enforcement
+│   ├── monitor.ts      # Timeout monitoring
+│   └── chainMonitor.ts # Chain event monitoring
+├── types/         # TypeScript type definitions
+├── utils/         # Configuration and utilities
+└── relayer.ts     # Main application entry point
+```
+
+### Testing
+
+```bash
+npm test
+```
+
+### Building
+
+```bash
+npm run build
+```
+
+## Monitoring and Observability
+
+The relayer provides comprehensive logging and status endpoints:
+
+- Real-time event logging with structured output
+- Status endpoint showing chain sync status and active swaps
+- Deadline monitoring with proactive alerts
+- Error handling with graceful degradation
+
+## Production Deployment
+
+1. **Environment Setup**: Configure all required environment variables
+2. **Database**: Ensure SQLite database directory is writable
+3. **Network Access**: Verify connectivity to Ethereum and Cardano networks
+4. **Monitoring**: Set up log aggregation and alerting
+5. **Backup**: Regular backup of swap database
+6. **Security**: Secure API secret and restrict network access
+
+## License
+
+MIT License - see LICENSE file for details.

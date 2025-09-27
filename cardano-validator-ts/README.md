@@ -25,6 +25,8 @@ TypeScript implementation of Cardano validators compatible with [1inch Fusion](h
                         │  Watcher/Relay  │
                         └─────────────────┘
 ```
+Note: Above is the flow for Maker on EVM and Taker on Cardano. In the reverse direction where Maker is on Cardano and Taker on EVM, we will use EscrowSrc on Cardano and EscrowDst on EVM instead.
+Function available is in parallel with the onchain escrow functions on [cross-chain-swap](https://github.com/1inch/cross-chain-swap/tree/master/contracts)
 
 ## 📦 Installation
 
