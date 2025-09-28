@@ -20,29 +20,29 @@
 import {
   JsonRpcProvider,
   Wallet,
-  AbiCoder,
-  randomBytes
+  AbiCoder
 } from "ethers";
 
 import * as CC_SDK from "@1inch/cross-chain-sdk";
-// import { SupportedChains, EscrowExtension, EvmCrossChainOrder } from "@1inch/cross-chain-sdk";
-import pkg from '@1inch/cross-chain-sdk';
-const { SupportedChains, EscrowExtension, EvmCrossChainOrder } = pkg;
+const {
+  SupportedChains,
+  EscrowExtension,
+  EvmCrossChainOrder
+} = CC_SDK;
+
 import * as F_SDK from "@1inch/fusion-sdk";
 
 import {
   base_sepolia,
-  resolverAddress,
+  resolverAddress as resolver_address,
   domain as limitOrderDomain,
   limitOrderProtocol
 } from "./constants.js";
 
-// unpack values from base_sepolia
+// unpack from base_sepolia
 const bs_escrowFactory = base_sepolia.escrowFactory;
 const ERC20_TRUE = base_sepolia.ERC20_TRUE;
 const USDC = base_sepolia.USDC;
-
-const resolver_address = resolverAddress;
 
 // provider, wallet, coder
 const rpc = "https://sepolia.base.org";

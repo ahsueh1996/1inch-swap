@@ -6,11 +6,15 @@
   "main": "BaseSepoliaResolver.js",
   "scripts": {
     "start": "node BaseSepoliaResolver.js",
-    "deploy": "node deployResolver.js"
+    "deploy": "node deployResolver.js",
+    "postinstall": "patch-package"
   },
   "dependencies": {
-    "ethers": "^6.11.1",
-    "@1inch/cross-chain-sdk": "0.2.1-rc.7",
-    "@1inch/fusion-sdk": "^2.3.8"
+    "@1inch/cross-chain-sdk": "1.0.2",
+    "@1inch/fusion-sdk": "^2.3.8",
+    "ethers": "^6.11.1"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.0"
   }
 }

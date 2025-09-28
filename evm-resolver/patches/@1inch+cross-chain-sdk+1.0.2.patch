@@ -1,0 +1,9 @@
+diff --git a/node_modules/@1inch/cross-chain-sdk/package.json b/node_modules/@1inch/cross-chain-sdk/package.json
+index 1111111..2222222 100644
+--- a/node_modules/@1inch/cross-chain-sdk/package.json
++++ b/node_modules/@1inch/cross-chain-sdk/package.json
+@@ -5,3 +5,4 @@
+   "author": "@1inch",
++  "type": "module",
+   "module": "./dist/esm/index.js",
+   "main": "./dist/cjs/index.js",
