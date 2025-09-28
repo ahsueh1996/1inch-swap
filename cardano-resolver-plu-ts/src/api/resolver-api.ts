@@ -82,7 +82,7 @@ export class ResolverAPI {
         console.error('Error creating order:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -126,7 +126,7 @@ export class ResolverAPI {
         console.error('Error deploying escrow:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -148,7 +148,7 @@ export class ResolverAPI {
         console.error('Error withdrawing:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -169,7 +169,7 @@ export class ResolverAPI {
         console.error('Error cancelling:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -196,7 +196,7 @@ export class ResolverAPI {
         console.error('Error getting order status:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -214,7 +214,7 @@ export class ResolverAPI {
         console.error('Error getting active orders:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -241,7 +241,7 @@ export class ResolverAPI {
         console.error('Error getting secret:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -261,7 +261,7 @@ export class ResolverAPI {
         console.error('Error calculating profit:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -281,7 +281,7 @@ export class ResolverAPI {
         console.error('Error getting UTXOs:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
@@ -313,7 +313,7 @@ export class ResolverAPI {
         console.error('Error handling webhook:', error);
         res.status(500).json({
           success: false,
-          error: error.message
+          error: error instanceof Error ? error.message : String(error) 
         });
       }
     });
