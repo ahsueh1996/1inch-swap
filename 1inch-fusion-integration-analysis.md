@@ -46,6 +46,8 @@ contract LimitOrderProtocol is EIP712, Ownable {
 }
 ```
 
+Where: the IAtomicSwapLOP contract does not set the auction details https://github.com/ronakgupta11/cardano-swap/blob/0104e5f41928161ee527d68aaba04ec9b243c3ef/contracts/evm/contracts/interfaces/IAtomicSwapLOP.sol#L8
+
 ### 2. Missing Fusion Core Features
 
 #### No Dutch Auction Mechanism
