@@ -1,3 +1,4 @@
+![flow diagram](https://github.com/ahsueh1996/1inch-swap/blob/main/2025-09-28 08.58.30.jpg?raw=true)
 # CardanoSwap+
 
 Refer to [technical design of CardanoSwap+](./cardanoswapplus-design.md).
