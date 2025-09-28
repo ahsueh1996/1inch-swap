@@ -42,3 +42,5 @@ export const base_sepolia = {
 };
 
 export const resolverAddress = "YOUR_RESOLVER_ADDRESS_HERE";
+
+export const PRIVATE_KEY = "0xyourprivatekeyhere";

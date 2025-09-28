@@ -36,7 +36,8 @@ import {
   base_sepolia,
   resolverAddress as resolver_address,
   domain as limitOrderDomain,
-  limitOrderProtocol
+  limitOrderProtocol,
+  PRIVATE_KEY
 } from "./constants.js";
 
 // unpack from base_sepolia
@@ -47,7 +48,7 @@ const USDC = base_sepolia.USDC;
 // provider, wallet, coder
 const rpc = "https://sepolia.base.org";
 const provider = new JsonRpcProvider(rpc);
-const wallet = new Wallet(process.env.PrivateKey, provider);
+const wallet = new Wallet(PRIVATE_KEY, provider);
 const coder = new AbiCoder();
 
 
